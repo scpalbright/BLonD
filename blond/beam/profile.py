@@ -20,6 +20,7 @@ import numpy as np
 from numpy.fft import rfft, rfftfreq
 from scipy import ndimage
 import ctypes
+import time as tm
 # from ..setup_cpp import libblond
 from .. import libblond
 from ..toolbox import filters_and_fitting as ffroutines
@@ -378,11 +379,15 @@ class Profile(object):
                  CutOptions = CutOptions(),
                  FitOptions= FitOptions(),
                  FilterOptions=FilterOptions(), 
-                 OtherSlicesOptions = OtherSlicesOptions()):
+                 OtherSlicesOptions = OtherSlicesOptions(),
+                 NumberOfProfiles = 1):
         """
         Constructor
         """
-        
+       
+
+        print("MAKING PROFILE OBJECT")
+ 
         # Copy of CutOptions object to be usef for reslicing
         self.cut_options = CutOptions
         
@@ -392,9 +397,14 @@ class Profile(object):
         # Import (reference) Beam
         self.Beam = Beam
         
+        # Number of profiles
+        self.number_of_profiles = NumberOfProfiles
+
+        print("N Profs: " + str(self.number_of_profiles))
+
         # Get all computed parameters from CutOptions
         self.set_slices_parameters()
-        
+
         # Initialize profile array as zero array
         self.n_macroparticles = np.zeros(self.n_slices, dtype = float)
         
@@ -424,13 +434,34 @@ class Profile(object):
     
         if OtherSlicesOptions.direct_slicing:
             self.track()
+
+        if self.number_of_profiles != 1:
+            print("test")
+            self.multi_prof_array = np.zeros([2, self.number_of_profiles*self.n_slices])
+            self.multi_time = np.linspace(0, self.cut_right*self.number_of_profiles, self.n_slices*self.number_of_profiles)
+            self.operations.append(self.multi_profile_shift)
     
     
+    def multi_profile_shift(self):
+
+#        print("shifting")
+#        t0 = tm.clock()
+
+        self.multi_time = np.linspace(0, self.cut_right*self.number_of_profiles, self.n_slices*self.number_of_profiles)
+
+        self.multi_prof_array[1] = np.interp(self.multi_time, self.multi_prof_array[0], self.multi_prof_array[1])
+        self.multi_prof_array[0] = self.multi_time
+        self.multi_prof_array[1, self.n_slices:] = self.multi_prof_array[1, :-self.n_slices]
+        self.multi_prof_array[1, :self.n_slices] = self.n_macroparticles
+
+#        print("shifted: " + str(tm.clock() - t0))
+
+
     def set_slices_parameters(self):
         self.n_slices, self.cut_left, self.cut_right, self.n_sigma, \
                 self.edges, self.bin_centers, self.bin_size = \
                 self.cut_options.get_slices_parameters()
-    
+
     
     def track(self):
         """
