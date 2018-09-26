@@ -437,6 +437,7 @@ class Profile(object):
 
         if self.number_of_profiles != 1:
             print("test")
+            self.multi_prof_array_store = np.zeros([2, self.number_of_profiles*self.n_slices])
             self.multi_prof_array = np.zeros([2, self.number_of_profiles*self.n_slices])
             self.multi_time = np.linspace(0, self.cut_right*self.number_of_profiles, self.n_slices*self.number_of_profiles)
             self.operations.append(self.multi_profile_shift)
@@ -447,12 +448,16 @@ class Profile(object):
 #        print("shifting")
 #        t0 = tm.clock()
 
-        self.multi_time = np.linspace(0, self.cut_right*self.number_of_profiles, self.n_slices*self.number_of_profiles)
+        self.multi_time = np.linspace(self.bin_centers[0], self.cut_right*self.number_of_profiles-self.bin_centers[0], self.n_slices*self.number_of_profiles)
 
-        self.multi_prof_array[1] = np.interp(self.multi_time, self.multi_prof_array[0], self.multi_prof_array[1])
+#        self.multi_prof_array_store[1] = np.interp(self.multi_time, self.multi_prof_array[0], self.multi_prof_array[1])
+        self.multi_prof_array_store[0, self.n_slices:] = self.multi_prof_array_store[0, :-self.n_slices] + self.bin_centers[-1]
+        self.multi_prof_array_store[0, :self.n_slices] = self.bin_centers
+        self.multi_prof_array_store[1, self.n_slices:] = self.multi_prof_array_store[1, :-self.n_slices]
+        self.multi_prof_array_store[1, :self.n_slices] = self.n_macroparticles
+
         self.multi_prof_array[0] = self.multi_time
-        self.multi_prof_array[1, self.n_slices:] = self.multi_prof_array[1, :-self.n_slices]
-        self.multi_prof_array[1, :self.n_slices] = self.n_macroparticles
+        self.multi_prof_array[1] = np.interp(self.multi_time, self.multi_prof_array_store[0], self.multi_prof_array_store[1])
 
 #        print("shifted: " + str(tm.clock() - t0))
 
@@ -562,8 +567,11 @@ class Profile(object):
         """
         Frequency array of the beam spectrum
         """
-        
+
+        print("NSampling: " + str(n_sampling_fft))
         self.beam_spectrum_freq = rfftfreq(n_sampling_fft, self.bin_size)
+        self.beam_spectrum_multi_freq = rfftfreq(128*self.number_of_profiles, self.bin_size)
+#        print(self.beam_spectrum_freq)
         
     
     def beam_spectrum_generation(self, n_sampling_fft):
@@ -571,8 +579,10 @@ class Profile(object):
         Beam spectrum calculation
         """
         
-        self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)         
-     
+        self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)
+        self.beam_spectrum_multi = rfft(self.n_macroparticles, 128*self.number_of_profiles)
+#        print(self.beam_spectrum)     
+
      
     def beam_profile_derivative(self, mode = 'gradient'):      
         """

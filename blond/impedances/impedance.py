@@ -94,13 +94,23 @@ class TotalInducedVoltage(object):
         """
         
         temp_induced_voltage = 0
+        temp_induced_voltage2 = 0
+
+        self.fullInduced1 = 0
+        self.fullInduced2 = 0
 
         for induced_voltage_object in self.induced_voltage_list:
             induced_voltage_object.induced_voltage_generation()
+            self.fullInduced1 += induced_voltage_object.induced_voltage
+            self.fullInduced2 += induced_voltage_object.induced_voltage2
             temp_induced_voltage += \
                   induced_voltage_object.induced_voltage[:self.profile.n_slices]
-            
+            temp_induced_voltage2 += \
+                  induced_voltage_object.induced_voltage2[:self.profile.n_slices]
+
+        print("n_slices: " + str(self.profile.n_slices)) 
         self.induced_voltage = temp_induced_voltage
+        self.induced_voltage2 = temp_induced_voltage2
         
         
     def track(self):
@@ -295,8 +305,15 @@ class _InducedVoltage(object):
         
         induced_voltage = - (self.beam.Particle.charge * e * self.beam.ratio *
             irfft(self.total_impedance * self.profile.beam_spectrum))
-        
+        induced_voltage2 = - (self.beam.Particle.charge * e * self.beam.ratio *
+            irfft(self.total_impedance2 * self.profile.beam_spectrum_multi))
+       
+        print("Ind1: " + str(len(induced_voltage)))
+        print("Ind2: " + str(len(induced_voltage2)))
+        print("n: " + str(self.n_induced_voltage))
+ 
         self.induced_voltage = induced_voltage[:self.n_induced_voltage]
+        self.induced_voltage2 = induced_voltage2#[:self.n_induced_voltage]
 
 
     def induced_voltage_mtw(self):
@@ -524,6 +541,7 @@ class InducedVoltageFreq(_InducedVoltage):
         
         # Frequency array of the impedance in Hz
         self.freq = self.profile.beam_spectrum_freq
+        self.freq2 = self.profile.beam_spectrum_multi_freq
             
         # Length of the front wake in frequency domain calculations 
         if self.front_wake_length:            
@@ -531,10 +549,10 @@ class InducedVoltageFreq(_InducedVoltage):
                     np.max(self.front_wake_length) / self.profile.bin_size))
         
         # Processing the impedances
-        self.sum_impedances(self.freq)
+        self.sum_impedances(self.freq, self.freq2)
         
     
-    def sum_impedances(self, freq):
+    def sum_impedances(self, freq, freq2):
         """
         Summing all the wake contributions in one total impedance.
         """
@@ -547,6 +565,15 @@ class InducedVoltageFreq(_InducedVoltage):
 
         # Factor relating Fourier transform and DFT            
         self.total_impedance /= self.profile.bin_size
+
+        self.total_impedance2 = np.zeros(freq2.shape, complex)
+
+        for i in range(len(self.impedance_source_list)):
+            self.impedance_source_list[i].imped_calc(freq2)
+            self.total_impedance2 += self.impedance_source_list[i].impedance
+
+        # Factor relating Fourier transform and DFT            
+        self.total_impedance2 /= self.profile.bin_size
 
 
 
