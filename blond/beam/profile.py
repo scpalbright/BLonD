@@ -570,7 +570,7 @@ class Profile(object):
 
         print("NSampling: " + str(n_sampling_fft))
         self.beam_spectrum_freq = rfftfreq(n_sampling_fft, self.bin_size)
-        self.beam_spectrum_multi_freq = rfftfreq(128*self.number_of_profiles, self.bin_size)
+        self.beam_spectrum_multi_freq = rfftfreq(108*self.number_of_profiles, self.bin_size)
 #        print(self.beam_spectrum_freq)
         
     
@@ -580,7 +580,7 @@ class Profile(object):
         """
         
         self.beam_spectrum = rfft(self.n_macroparticles, n_sampling_fft)
-        self.beam_spectrum_multi = rfft(self.n_macroparticles, 128*self.number_of_profiles)
+        self.beam_spectrum_multi = rfft(self.n_macroparticles, 108*self.number_of_profiles)
 #        print(self.beam_spectrum)     
 
      
