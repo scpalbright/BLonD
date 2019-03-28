@@ -146,7 +146,7 @@ class Beam(object):
         self.intensity = float(intensity) 
         self.n_macroparticles = int(n_macroparticles)
         self.ratio = self.intensity/self.n_macroparticles
-        self.id = np.arange(1, self.n_macroparticles + 1, dtype=int)
+        self.id = np.arange(1, self.n_macroparticles + 1, dtype=np.int32)
 
     @property
     def n_macroparticles_lost(self):
@@ -313,7 +313,7 @@ class Beam(object):
 
         self.id = np.concatenate((self.id, np.arange(self.id[-1] + 1,\
                                                      self.id[-1]\
-                                                     + nNew + 1, dtype=int)))
+                                                     + nNew + 1, dtype=np.int32)))
         self.n_macroparticles += nNew
 
         self.dt = np.concatenate((self.dt, newdt))
@@ -348,6 +348,9 @@ class Beam(object):
                 newids[i] = next(counter)
             else:
                 next(counter)
+        
+        self.id = self.id.astype(np.int32)
+        newids = newids.astype(np.int32)
         
         self.id = np.concatenate((self.id, newids))
         self.n_macroparticles += other_beam.n_macroparticles                
