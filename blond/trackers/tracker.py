@@ -232,8 +232,8 @@ class RingAndRFTracker(object):
                  interpolation=False, Profile=None, TotalInducedVoltage=None):
 
         # Set up logging
-        self.logger = logging.getLogger(__class__.__name__)
-        self.logger.info("Class initialized")
+#        self.logger = logging.getLogger(__class__.__name__)
+#        self.logger.info("Class initialized")
 
         # Imports from RF parameters
         self.rf_params = RFStation
@@ -300,7 +300,7 @@ class RingAndRFTracker(object):
                                " with periodicity not yet implemented!")
         if (self.cavityFB is not None) and (self.interpolation is False):
             self.interpolation = True
-            self.logger.warning("Setting interpolation to TRUE")
+#            self.logger.warning("Setting interpolation to TRUE")
 
     def kick(self, beam_dt, beam_dE, index):
         """Function updating the particle energy due to the RF kick in a given
@@ -383,6 +383,7 @@ class RingAndRFTracker(object):
         # Determine phase loop correction on RF phase and frequency
         if self.beamFB is not None and self.counter[0] >= self.beamFB.delay:
             self.beamFB.track()
+
 
         if self.periodicity:
 

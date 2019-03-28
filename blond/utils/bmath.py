@@ -34,6 +34,7 @@ _CPU_func_dict = {
     'synchrotron_radiation_full': bphysics_wrap.synchrotron_radiation_full,
     # 'linear_interp_time_translation': bphysics_wrap.linear_interp_time_translation,
     'slice': bphysics_wrap.slice,
+    'lossy_slice': bphysics_wrap.lossy_slice,
     'slice_smooth': bphysics_wrap.slice_smooth,
     'music_track': bphysics_wrap.music_track,
     'music_track_multiturn': bphysics_wrap.music_track_multiturn,

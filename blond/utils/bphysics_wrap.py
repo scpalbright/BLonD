@@ -85,6 +85,7 @@ def linear_interp_time_translation(ring, dt, dE, turn):
 
 
 def slice(profile):
+
     __lib.histogram(__getPointer(profile.Beam.dt),
                     __getPointer(profile.n_macroparticles),
                     ct.c_double(profile.cut_left),
@@ -92,6 +93,15 @@ def slice(profile):
                     ct.c_int(profile.n_slices),
                     ct.c_int(profile.Beam.n_macroparticles))
 
+def lossy_slice(profile):
+
+    __lib.lossy_histogram(__getPointer(profile.Beam.dt),
+                    __getPointer(profile.n_macroparticles),
+                    __getPointer(profile.Beam.id),
+                    ct.c_double(profile.cut_left),
+                    ct.c_double(profile.cut_right),
+                    ct.c_int(profile.n_slices),
+                    ct.c_int(profile.Beam.n_macroparticles))
 
 def slice_smooth(profile):
     __lib.smooth_histogram(__getPointer(profile.Beam.dt),

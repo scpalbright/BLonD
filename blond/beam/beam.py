@@ -178,16 +178,15 @@ class Beam(object):
     def eliminate_lost_particles(self):
         """Eliminate lost particles from the beam coordinate arrays
         """
-        
-        indexalive = np.where( self.id == 0 )[0]
-        if len(indexalive) < self.n_macroparticles:
-            self.dt = np.ascontiguousarray(self.beam.dt[indexalive])
-            self.dE = np.ascontiguousarray(self.beam.dE[indexalive])
-            self.n_macroparticles = len(self.beam.dt)
+
+        indexalive = np.where( self.id != 0 )[0]
+        if len(indexalive) > 0:
+            self.dt = np.ascontiguousarray(self.dt[indexalive])
+            self.dE = np.ascontiguousarray(self.dE[indexalive])
+            self.n_macroparticles = len(self.dt)
         else:
-            #AllParticlesLost
-            raise RuntimeError("ERROR in Beams: all particles lost and"+
-                " eliminated!")    
+            raise blExcept.AllParticlesLost("ERROR in Beams: all particles lost and"+
+                " eliminated!") 
 
         
     def statistics(self):
@@ -268,7 +267,7 @@ class Beam(object):
         '''
 
         itemindex = np.where( (self.dE - dE_min)*(dE_max - self.dE) < 0 )[0]
-
+        print("N lost: " + str(len(itemindex)))
         if itemindex.size != 0:          
             self.id[itemindex] = 0 
 
@@ -312,8 +311,8 @@ class Beam(object):
 
         nNew = len(newdt)
 
-        self.id = np.concatenate((self.id, np.arange(self.n_macroparticles + 1,\
-                                                     self.n_macroparticles\
+        self.id = np.concatenate((self.id, np.arange(self.id[-1] + 1,\
+                                                     self.id[-1]\
                                                      + nNew + 1, dtype=int)))
         self.n_macroparticles += nNew
 
@@ -341,7 +340,7 @@ class Beam(object):
         self.dE = np.concatenate((self.dE, other_beam.dE))
         
 
-        counter = itl.count(self.n_macroparticles + 1)
+        counter = itl.count(self.id[-1] + 1)
         newids = np.zeros(other_beam.n_macroparticles)
         
         for i in range(other_beam.n_macroparticles):

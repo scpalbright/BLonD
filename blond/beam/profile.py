@@ -79,7 +79,8 @@ class CutOptions(object):
     """
 
     def __init__(self, cut_left=None, cut_right=None, n_slices=100,
-                 n_sigma=None, cuts_unit='s', RFSectionParameters=None):
+                 n_sigma=None, cuts_unit='s', RFSectionParameters=None,
+                 losses = False):
         """
         Constructor
         """
@@ -115,6 +116,8 @@ class CutOptions(object):
 
         self.edges = np.zeros(n_slices + 1, dtype=float)
         self.bin_centers = np.zeros(n_slices, dtype=float)
+        
+        self.losses = losses
 
     def set_cuts(self, Beam=None):
         """
@@ -398,7 +401,10 @@ class Profile(object):
         if OtherSlicesOptions.smooth:
             self.operations = [self._slice_smooth]
         else:
-            self.operations = [self._slice]
+            if not CutOptions.losses:
+                self.operations = [self._slice]
+            else:
+                self.operations = [self._lossy_slice]
 
         if FitOptions.fit_option is not None:
             self.fit_option = FitOptions.fit_option
@@ -455,6 +461,11 @@ class Profile(object):
         #                  ctypes.c_uint(self.n_slices), 
         #                  ctypes.c_uint(self.Beam.n_macroparticles))
 
+    def _lossy_slice(self):
+        """
+        Constant space slicing with a constant frame with lost particles ignored 
+        """
+        bm.lossy_slice(self)
     
     def apply_fit(self):
         """
