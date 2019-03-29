@@ -43,6 +43,7 @@ _CPU_func_dict = {
     'cumprod': np.cumprod,
     'gradient': np.gradient,
     'sqrt': np.sqrt,
+    'threshold': bphysics_wrap.threshold,
     'device': 'CPU'
 }
 

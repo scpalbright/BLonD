@@ -161,3 +161,11 @@ def synchrotron_radiation_full(SyncRad, turn):
         ct.c_double(SyncRad.general_params.energy[0, turn]),
         __getPointer(SyncRad.random_array),
         ct.c_int(SyncRad.n_kicks))
+
+
+def threshold(inpVals, outVals, thresh):
+    __lib.threshold(
+            __getPointer(inpVals),
+            __getPointer(outVals),
+            ct.c_double(thresh),
+            ct.c_int(len(inpVals)))
