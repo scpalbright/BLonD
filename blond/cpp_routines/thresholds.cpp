@@ -24,14 +24,10 @@
 //#endif
 
 extern "C" void threshold(const double *__restrict__ input,
-                          double *__restrict__ output, const double thresh,
+                          bool *__restrict__ output, const double thresh,
                           const int n_macroparticles)
 {
-    
     for (int i = 0; i < n_macroparticles; i++){
-    
-        output[i] = signbit(input[i] - thresh) + 1;
-    
+        output[i] = signbit(input[i] - thresh);
     }
-    
 }
