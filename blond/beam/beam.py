@@ -373,17 +373,3 @@ class Beam(object):
         else:
             self.add_particles(other)
             return self
-        
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-
-
