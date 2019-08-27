@@ -40,8 +40,8 @@ class TrackIteration(object):
     
     def __init__(self, trackMap, initTurn = 0, finalTurn = -1):
 
-        if not all((callable(m) for m in trackMap)):
-            raise AttributeError("All map objects must be callable")
+        if not all((hasattr(m, 'track') for m in trackMap)):
+            raise AttributeError("All map objects must be trackable")
             
         self._map = trackMap
         if isinstance(initTurn, int):
@@ -72,7 +72,7 @@ class TrackIteration(object):
         number of turns with predicate(trackMap, turnNumber, *args, **kwargs)
         '''
         
-        self.functionList.append((self._partial(predicate, args, kwargs)
+        self.functionList.append((self._partial(predicate, *args, **kwargs)
                                   , repetionRate))
         
 
@@ -93,7 +93,7 @@ class TrackIteration(object):
 
         try:
             for m in self._map:
-                m()
+                m.track()
         except IndexError:
             raise StopIteration
 
@@ -124,7 +124,7 @@ class TrackIteration(object):
         return self.turnNumber
         
     
-    def _partial(self, predicate, args, kwargs):
+    def _partial(self, predicate, *args, **kwargs):
         '''
         reimplementation of functools.partial to prepend
         rather than append to *args
