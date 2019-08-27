@@ -43,7 +43,7 @@ class TestTrackIteration(unittest.TestCase):
 
         self.n_turns = self.ring.n_turns
 
-        self.map_ = [self.full_ring.track, self.profile.track]
+        self.map_ = [self.full_ring, self.profile]
 
         self.trackIt = TrackIteration(self.map_)
 
@@ -119,14 +119,19 @@ class TestTrackIteration(unittest.TestCase):
 
         testPasses = [None, 1, 'abc']
         for t in testPasses:
-            with self.assertRaises(AttributeError, msg='Should raise AttrinuteError if non-callable object is passed in map'):
+            with self.assertRaises(AttributeError, msg='Should raise AttributeError if non-trackable object is passed in map'):
                 TrackIteration([t])
         testPasses = [None, 1., 'abc']
+
+        class tmp:
+            track = None
+
         for t in testPasses:
+            
             with self.assertRaises(TypeError, msg='Should raise TypeError if initTurn is non-integer'):
-                TrackIteration([lambda _ : _], t)
+                TrackIteration(tmp, t)
             with self.assertRaises(TypeError, msg='Should raise TypeError if initTurn is non-integer'):
-                TrackIteration([lambda _ : _], 0, t)
+                TrackIteration(tmp, 0, t)
 
         def testItt():
             for i in range(self.n_turns+1):
