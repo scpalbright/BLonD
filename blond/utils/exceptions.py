@@ -1,15 +1,22 @@
+#==============
+#Base Exception
+#==============
+
+class BLonDException(Exception):
+    pass
+
 
 #===============
 #Beam Exceptions
 #===============
 
-class MassError(Exception):
+class MassError(BLonDException):
     pass
 
-class AllParticlesLost(Exception):
+class AllParticlesLost(BLonDException):
     pass
 
-class ParticleAdditionError(Exception):
+class ParticleAdditionError(BLonDException):
     pass
 
 
@@ -17,10 +24,10 @@ class ParticleAdditionError(Exception):
 #Distribution Generation Exceptions
 #==================================
 
-class DistributionError(Exception):
+class DistributionError(BLonDException):
     pass
 
-class GenerationError(Exception):
+class GenerationError(BLonDException):
     pass
 
 
@@ -28,10 +35,10 @@ class GenerationError(Exception):
 #Profile Exceptions
 #==================
 
-class CutError(Exception):
+class CutError(BLonDException):
     pass
 
-class ProfileDerivativeError(Exception):
+class ProfileDerivativeError(BLonDException):
     pass
 
 
@@ -39,19 +46,19 @@ class ProfileDerivativeError(Exception):
 #Impedance Exceptions
 #====================
 
-class WakeLengthError(Exception):
+class WakeLengthError(BLonDException):
     pass
 
-class FrequencyResolutionError(Exception):
+class FrequencyResolutionError(BLonDException):
     pass
 
-class ResonatorError(Exception):
+class ResonatorError(BLonDException):
     pass
 
-class WrongCalcError(Exception):
+class WrongCalcError(BLonDException):
     pass
 
-class MissingParameterError(Exception):
+class MissingParameterError(BLonDException):
     pass
 
 
@@ -59,7 +66,7 @@ class MissingParameterError(Exception):
 #Input Parameters Exceptions
 #===========================
 
-class MomentumError(Exception):
+class MomentumError(BLonDException):
     pass
 
 
@@ -67,16 +74,16 @@ class MomentumError(Exception):
 #LLRF Exceptions
 #===============
 
-class PhaseLoopError(Exception):
+class PhaseLoopError(BLonDException):
     pass
 
-class PhaseNoiseError(Exception):
+class PhaseNoiseError(BLonDException):
     pass
 
-class FeedbackError(Exception):
+class FeedbackError(BLonDException):
     pass
 
-class ImpulseError(Exception):
+class ImpulseError(BLonDException):
     pass
 
 
@@ -84,10 +91,10 @@ class ImpulseError(Exception):
 #Toolbox Exceptions
 #==================
 
-class PhaseSpaceError(Exception):
+class PhaseSpaceError(BLonDException):
     pass
 
-class NoiseDiffusionError(Exception):
+class NoiseDiffusionError(BLonDException):
     pass
 
 
@@ -95,19 +102,19 @@ class NoiseDiffusionError(Exception):
 #Tracker Exceptions
 #==================
 
-class PotentialWellError(Exception):
+class PotentialWellError(BLonDException):
     pass
 
-class SolverError(Exception):
+class SolverError(BLonDException):
     pass
 
-class PeriodicityError(Exception):
+class PeriodicityError(BLonDException):
     pass
 
-class ProfileError(Exception):
+class ProfileError(BLonDException):
     pass
 
-class SynchrotronMotionError(Exception):
+class SynchrotronMotionError(BLonDException):
     pass
 
 
@@ -115,15 +122,17 @@ class SynchrotronMotionError(Exception):
 #Util Exceptions
 #===============
 
-class ConvolutionError(Exception):
+class ConvolutionError(BLonDException):
     pass
 
-class IntegrationError(Exception):
+class IntegrationError(BLonDException):
     pass
 
-class SortError(Exception):
+class SortError(BLonDException):
     pass
 
+class ObjectCreationError(BLonDException):
+    pass
 
 
 
@@ -131,8 +140,8 @@ class SortError(Exception):
 #Global Exceptions
 #=================
     
-class InterpolationError(Exception):
+class InterpolationError(BLonDException):
     pass
 
-class InputDataError(Exception):
+class InputDataError(BLonDException):
     pass
