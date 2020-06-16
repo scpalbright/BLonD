@@ -51,7 +51,7 @@ def load_dict(inputDict):
     if 'ring' in inputDict:
         _check_ring(inputDict['ring'])
 
-    objects = {key: _object_from_dict(inputDict.pop(key),
+    objects = {key: _object_from_dict(inputDict[key],
                       availableObjects[key]) for key in inputDict}
 
     return builder(**objects)
@@ -145,11 +145,19 @@ def _object_from_dict(inputDict, obj, returnRequired = False):
                                 v.default is not inspect.Parameter.empty}
 
     if inputDict:
-        warnings.Warn("Unrecognised members will be passed as kwargs.  "
+        warnings.warn("Unrecognised members will be passed as kwargs.  "
                       + "The unknown arguments are: "
                       + f"{list(inputDict.keys())}")
 
-    return obj(**required, **optional, **inputDict)
+    try:
+        retObj = obj(**required, **optional, **inputDict)
+    except TypeError as e:
+        raise blExcept.ObjectCreationError(f"Attempting to create "
+                                           +f"{obj.__name__} when a TypeError "
+                                           +"was raised with message"
+                                           + f" {e.args[0]}")
+    else:
+        return retObj
 
 
 if __name__ == '__main__':
