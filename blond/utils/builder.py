@@ -3,6 +3,7 @@ import json
 import numpy as np
 import inspect
 import warnings
+import sys
 
 #BLonD imports
 import blond.input_parameters.ring as inputRing
@@ -47,6 +48,9 @@ def load_dict(inputDict):
                                      +"objects.  The available objects "
                              + f"are {list(availableObjects.keys())}")
 
+    if 'ring' in inputDict:
+        _check_ring(inputDict['ring'])
+
     objects = {key: _object_from_dict(inputDict.pop(key),
                       availableObjects[key]) for key in inputDict}
 
@@ -66,30 +70,52 @@ def _check_ring(inputDict):
     particleDict = {'Proton': beam.Proton,
                     'Electron': beam.Electron,
                     'Positron': beam.Positron}
-    
+    # print(inputDict)
+    # sys.exit()
     if isinstance(inputDict['Particle'], str):
         if inputDict['Particle'] in particleDict:
-            inputDict['Particle'] = particleDict[inputDict['Particle']]()
+            try:
+                inputDict['Particle'] = particleDict[inputDict['Particle']]()
+            except KeyError:
+                pass
 
     elif hasattr(inputDict['Particle'], '__iter__'):
         if isinstance(inputDict['Particle'], dict):
-            particle = beam.Particle(**inputDict['Particle'])
+            particle = _object_from_dict(inputDict['Particle'], beam.Particle,
+                                                                         True)
             if isinstance(particle, tuple):
                 raise blExcept.ObjectCreationError("Attempted to create the"
                         +f" Particle object from {inputDict['Particle']} but "
                         +"dict input requires keywords {particle[0]} only.")
+        else:
+            try:
+                particle = beam.Particle(*inputDict['Particle'])
+            except TypeError:
+                raise blExcept.ObjectCreationError("Attempted to create the "
+                           +f"Particle object from {inputDict['Particle']} but"
+                           +f" the input was invalid.  Two elements are "
+                           +"required, interpreted as [mass, charge].")
+
+            inputDict['Particle'] = particle
+
+    _check_npy(inputDict, 'ring')
+
+    if isinstance(inputDict['synchronous_data'], np.ndarray):
+        if inputDict['synchronous_data'].shape[0] == 2:
+            inputDict['synchronous_data'] = (inputDict['synchronous_data'][0],
+                                             inputDict['synchronous_data'][1])
 
 
 def _check_npy(inputDict, objName):
 
     for k in inputDict:
         if isinstance(inputDict[k], str):
-            if str[-4:] == '.npy':
+            if inputDict[k][-4:] == '.npy':
                 try:
                     inputDict[k] = np.load(inputDict[k])
                 except FileNotFoundError:
-                    raise FileNotFoundError(f"Attempted to load parameter {k}"
-                                            + "for object " + objName + "as a"
+                    raise FileNotFoundError(f"Attempted to load parameter '{k}'"
+                                            + " for '" + objName + "' as a "
                                             + f".npy file from {inputDict[k]}"
                                             + " but the file was not found.")
 
