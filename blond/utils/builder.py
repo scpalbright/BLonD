@@ -23,38 +23,89 @@ class builder:
     def __init__(self, ring=None, RF=None, beam=None, profile=None,
                  cut_options=None, ring_options=None):
 
-        print("ring", ring)
-        print("RF", RF)
-        print("beam", beam)
-        print("profile", profile)
-        print("cut_options", cut_options)
-        print("ring_options", ring_options)
+        if ring is not None:
+            _check_ring(ring)
+        self.ringDict = ring
+
+        if RF is not None:
+            _check_rf(RF)
+        self.RFDict = RF
+        self.beamDict = beam
+        self.profileDict = profile
+        self.cut_optionsDict = cut_options
+        self.ring_optionsDict = ring_options
+
+        self.make_simulation()
 
 
-availableObjects= {
-                  'ring': inputRing.Ring,
-                  'RF': inputRF.RFStation,
-                  'ring_options': ringOpt.RingOptions,
-                  'beam': beam.Beam,
-                  'profile': prof.Profile,
-                  'cut_options': prof.CutOptions
-                   }
+    def _make_ring(self):
+        self.ring = _object_from_dict(self.ringDict, inputRing.Ring)
+
+
+    def _make_RF(self):
+
+        try:
+            rfkwargs = {**self.RFDict}
+        except AttributeError:
+            raise AttributeError("Cannot make RF object without RFDict.")
+
+        try:
+            self.RF = _object_from_dict({**rfkwargs, 'Ring': self.ring},
+                                         inputRF.RFStation)
+        except AttributeError:
+            raise AttributeError("Cannot make RF object with ring object.")
+
+
+    def _make_beam(self):
+        self.beam = _object_from_dict(self.beamDict, beam.Beam)
+
+
+    def _make_profile(self):
+        self.profile = _object_from_dict(self.profileDict, prof.Profile)
+
+    def _make_ring_options(self):
+        self.ring_options = _object_from_dict(self.ring_optionsDict,
+                                              ringOpt.RingOptions)
+
+
+    def _make_cut_options(self):
+        self.cut_options = _object_from_dict(self.cut_optionsDict,
+                                             prof.CutOptions)
+
+
+    def _make_tracker(self):
+        self.long_tracker = tracker.RingAndRFTracker(self.RF, self.beam)
+
+
+    def _make_full_ring(self):
+        self.full_ring = tracker.FullRingAndRF([self.long_tracker])
+
+
+    def make_simulation(self):
+
+        try:
+            self._make_ring_options()
+        except AttributeError:
+            self.ring_options = ringOpt.RingOptions()
+        self.ringDict['RingOptions'] = self.ring_options
+        self._make_ring()
+
+        self._make_RF()
+
+        try:
+            self._make_cut_options()
+        except AttributeError:
+            self.cut_options = prof.CutOptions()
+        self.profileDict['CutOptions'] = self.cut_options
+
+        self._make_beam()
+        self._make_profile()
+        self._make_tracker()
+        self._make_full_ring()
 
 
 def load_dict(inputDict):
-
-    if not all([key in availableObjects for key in inputDict]):
-        raise blExcept.BuildingError("Attempted to create unrecognised "
-                                     +"objects.  The available objects "
-                             + f"are {list(availableObjects.keys())}")
-
-    if 'ring' in inputDict:
-        _check_ring(inputDict['ring'])
-
-    objects = {key: _object_from_dict(inputDict[key],
-                      availableObjects[key]) for key in inputDict}
-
-    return builder(**objects)
+    return _object_from_dict(inputDict, builder)
 
 
 def load_JSON( file):
@@ -70,8 +121,7 @@ def _check_ring(inputDict):
     particleDict = {'Proton': beam.Proton,
                     'Electron': beam.Electron,
                     'Positron': beam.Positron}
-    # print(inputDict)
-    # sys.exit()
+
     if isinstance(inputDict['Particle'], str):
         if inputDict['Particle'] in particleDict:
             try:
@@ -104,6 +154,10 @@ def _check_ring(inputDict):
         if inputDict['synchronous_data'].shape[0] == 2:
             inputDict['synchronous_data'] = (inputDict['synchronous_data'][0],
                                              inputDict['synchronous_data'][1])
+
+
+def _check_rf(inputDict):
+    _check_npy(inputDict, 'RFStation')
 
 
 def _check_npy(inputDict, objName):
