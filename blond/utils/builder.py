@@ -44,10 +44,9 @@ class builder:
 
     def _make_RF(self):
 
-        try:
-            rfkwargs = {**self.RFDict}
-        except AttributeError:
-            raise AttributeError("Cannot make RF object without RFDict.")
+        rfkwargs = {**self.RFDict}
+
+        print(rfkwargs)
 
         try:
             self.RF = _object_from_dict({**rfkwargs, 'Ring': self.ring},
@@ -158,6 +157,50 @@ def _check_ring(inputDict):
 
 def _check_rf(inputDict):
     _check_npy(inputDict, 'RFStation')
+    _check_npy(inputDict['voltage'], 'voltage')
+    for k in inputDict['voltage']:
+        if hasattr(inputDict['voltage'][k], '__iter__'):
+            inputDict['voltage'][k] = np.array(inputDict['voltage'][k])
+            if inputDict['voltage'][k].shape[0] == 2:
+                inputDict['voltage'][k] = [inputDict['voltage'][k][0],
+                                           inputDict['voltage'][k][1]]
+    _check_npy(inputDict['phi_rf_d'], 'phi_rf_d')
+    for k in inputDict['phi_rf_d']:
+        if hasattr(inputDict['phi_rf_d'][k], '__iter__'):
+            inputDict['phi_rf_d'][k] = np.array(inputDict['phi_rf_d'][k])
+            if inputDict['phi_rf_d'][k].shape[0] == 2:
+                inputDict['phi_rf_d'][k] = [inputDict['phi_rf_d'][k][0],
+                                            inputDict['phi_rf_d'][k][1]]
+
+    voltage = []
+    for h in inputDict['harmonic']:
+        voltage.append(inputDict['voltage'][str(h)])
+    if any(hasattr(v, '__iter__') for v in voltage):
+        shapes = [len(v) for v in voltage if hasattr(v, '__iter__')]
+        if len(shapes) != len(voltage):
+            raise RuntimeError("Cannot mix single and multi-valued input"
+                               + " for voltage.")
+        elif not all(s == shapes[0] for s in shapes):
+            raise RuntimeError("trying to combine turn and time based input")
+
+        inputDict['voltage'] = tuple(voltage)
+    else:
+        inputDict['voltage'] = voltage
+
+    phase = []
+    for h in inputDict['phi_rf_d']:
+        phase.append(inputDict['phi_rf_d'][str(h)])
+    if any(hasattr(p, '__iter__') for p in phase):
+        shapes = [len(v) for v in phase if hasattr(v, '__iter__')]
+        if len(shapes) != len(phase):
+            raise RuntimeError("Cannot mix single and multi-valued input"
+                               + " for phase.")
+        elif not all(s == shapes[0] for s in shapes):
+            raise RuntimeError("trying to combine turn and time based input")
+
+        inputDict['phi_rf_d'] = tuple(phase)
+    else:
+        inputDict['phi_rf_d'] = phase
 
 
 def _check_npy(inputDict, objName):
@@ -209,7 +252,7 @@ def _object_from_dict(inputDict, obj, returnRequired = False):
         raise blExcept.ObjectCreationError(f"Attempting to create "
                                            +f"{obj.__name__} when a TypeError "
                                            +"was raised with message"
-                                           + f" {e.args[0]}")
+                                           + f" {e.args[0]}") from e
     else:
         return retObj
 
